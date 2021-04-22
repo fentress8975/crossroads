@@ -1,5 +1,6 @@
 #include "SFML/Graphics.hpp"
 #include <iostream>
+#include <string>
 
 const int window_w = 1280;
 const int window_h = 720;
@@ -10,7 +11,7 @@ void game();
 class CrossRoad
 {
 private:
-	sf::RenderWindow window;
+	
 	class Cars;
 	class Traffic_Lights;
 
@@ -18,32 +19,16 @@ public:
 	CrossRoad();
 	~CrossRoad();
 	void update() {
-		while (window.isOpen())
-		{
-			sf::Event event;
-			while (window.pollEvent(event))
-			{
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-					window.close();
-				if (event.type == sf::Event::Closed)
-					window.close();
 
 
-				window.clear(sf::Color::Black);
-
-				//window.draw();
-
-				window.display();
-			}
-		}
+		
 	}
 
 };
 
 CrossRoad::CrossRoad()
 {
-	sf::RenderWindow window(sf::VideoMode(window_w, window_h), "Crossroads");
-	window.setFramerateLimit(framerame_limit);
+	
 
 }
 
@@ -71,18 +56,39 @@ Cars::~Cars()
 {
 }
 
+ 
+
 class Traffic_Lights : CrossRoad
 {
 public:
 	Traffic_Lights();
 	~Traffic_Lights();
+	void change_light() { //смена цвета светофора
+		time1 = clock.getElapsedTime();
+		if (time1.asSeconds() > 5) {  //каждые 5 секунд менять цвет
+			std::cout << "Прошло 5 секунд, меняем цвет светофора!" << std::endl;
+			clock.restart();
+			color = (color == lights_color::GREEN) ? lights_color::RED : lights_color::GREEN;
+			std::cout << (color == lights_color::GREEN ? "GREEN" : "RED") << std::endl;
+		} 
+
+		//std::cout << time1.asSeconds()<<std::endl;  //Дебаги времени в консоли
+	}
 
 private:
+	enum class lights_color {RED, GREEN}; // переключатель для смены цвета светофора
+	lights_color color;
+	sf::Clock clock; //активирую таймер для смены цвета
+	sf::Time time1; 
 
 };
 
 Traffic_Lights::Traffic_Lights()
 {
+	lights_color color = lights_color::RED;
+	std::cout << "RED" << std::endl;
+
+	
 }
 
 Traffic_Lights::~Traffic_Lights()

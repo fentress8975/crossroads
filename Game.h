@@ -1,9 +1,10 @@
 #include "SFML/Graphics.hpp"
 #include <iostream>
 #include <string>
+#include <list>
 
-const int window_w = 1280;
-const int window_h = 720;
+const int window_w = 800;
+const int window_h = 800;
 const int framerame_limit = 60;
 
 void game();
@@ -14,20 +15,24 @@ private:
 	
 	class Cars;
 	class Traffic_Lights;
-
+	sf::Texture texture;
+	sf::Sprite sprite;
 public:
 	CrossRoad();
 	~CrossRoad();
-	void update() {
+	sf::Sprite update() {
+		texture.loadFromFile("img/Crossroad(1).png");
 
+		sprite.setTexture(texture);
 
-		
+		return sprite;
 	}
 
 };
 
 CrossRoad::CrossRoad()
 {
+	
 	
 
 }

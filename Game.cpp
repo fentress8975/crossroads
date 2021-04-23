@@ -13,6 +13,7 @@ void game() {
 	while (window.isOpen())
 	{
 		light1.change_light();
+		//crossroad1.update();
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -28,7 +29,7 @@ void game() {
 
 			window.clear(sf::Color::Black);
 
-			//window.draw();
+			window.draw(crossroad1.update());
 
 			window.display();
 		}

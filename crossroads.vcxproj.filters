@@ -27,4 +27,12 @@
       <Filter>Исходные файлы</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="img\Crossroad(1).png">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="img\car.png">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

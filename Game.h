@@ -35,9 +35,7 @@ public:
 	~CrossRoad();
 	sf::Sprite update() {
 		texture.loadFromFile("img/Crossroad(1).png");
-
 		sprite.setTexture(texture);
-
 		return sprite;
 	}
 
@@ -105,7 +103,7 @@ void Cars::spawn_car() {
 class Traffic_Lights //Светофор, он будет давать сигналы перекрестку о том, какая дорога закрыта
 {
 public:
-	Traffic_Lights(char);
+	Traffic_Lights(char,char);
 	~Traffic_Lights();
 	void change_light() { //смена цвета светофора
 		time1 = clock.getElapsedTime();
@@ -118,27 +116,61 @@ public:
 
 		//std::cout << time1.asSeconds()<<std::endl;  //Дебаги времени в консоли
 	}
+	sf::Sprite update(){
+		if (color == lights_color::GREEN){
+			sprite.setTexture(texture_green);
+			return sprite;
+		}
+		else {
+			sprite.setTexture(texture_red);
+			return sprite;
+		}
+	}
 
 private:
 	enum class lights_color {RED, GREEN}; // переключатель для смены цвета светофора
 	lights_color color;
-	sf::Clock clock; //активирую таймер для смены цвета
+	sf::Clock clock; //таймер для смены цвета
 	sf::Time time1; 
+	sf::Texture texture_green;
+	sf::Texture texture_red;
+	sf::Sprite sprite;
 
 };
 
-Traffic_Lights::Traffic_Lights(char x)
+Traffic_Lights::Traffic_Lights(char x, char y)
 {
-	lights_color color = lights_color::RED;
+	texture_green.loadFromFile("img/traff_light_G.png");
+	texture_red.loadFromFile("img/traff_light_R.png");
 	switch (x) //Определим, c каким цветом будет светофор
 	{
-	case 'R': color = lights_color::RED; break;
-	case 'G': color = lights_color::GREEN; break;
+	case 'R': 
+		color = lights_color::RED;
+		sprite.setTexture(texture_red);
+		break;
+	case 'G': 
+		color = lights_color::GREEN;
+		sprite.setTexture(texture_green);
+		break;
 	default:
 		std::cout << "Не понимаю, какой цвет?" << std::endl;
 		break;
 	}
 	std::cout << (color == lights_color::GREEN ? "GREEN" : "RED") << std::endl;
+	switch (y) //Определим, на какое направление будет светофор
+	{
+	case 'S': 
+		sprite.setPosition(440,350);
+
+		break;
+	case 'E': 
+		sprite.setPosition(350, 350);
+
+		break;
+	default:
+		std::cout << "Не понимаю, какое направление?" << std::endl;
+		break;
+	}
 }
 
 Traffic_Lights::~Traffic_Lights()

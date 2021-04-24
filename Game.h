@@ -3,13 +3,25 @@
 #include <string>
 #include <list>
 
-const int window_w = 800;
+const int window_w = 800;   //Ширина и высота окна
 const int window_h = 800;
-const int framerame_limit = 60;
+const int framerame_limit = 60;   //Лимит фпс
+const sf::Vector2i centerMap(499, 499);  //Центр карты, к нему будет все привязано, так что очень аккуратно
+
+// по этим координатом будем определять, где хотят заспаунить машинку, в своем роде позиции к
+const sf::Vector2i spawnN0(370, 0);
+const sf::Vector2i spawnN1(429,48);
+const sf::Vector2i spawnS0(371,751);
+const sf::Vector2i spawnS1(429,799);
+const sf::Vector2i spawnE0(749,371);
+const sf::Vector2i spawnE1(799,429);
+const sf::Vector2i spawnW0(0,371);
+const sf::Vector2i spawnW1(45,429);
 
 void game();
 
-class CrossRoad
+
+class CrossRoad //Перекресток, с доступок к светофорам и машинам
 {
 private:
 	
@@ -17,6 +29,7 @@ private:
 	class Traffic_Lights;
 	sf::Texture texture;
 	sf::Sprite sprite;
+	
 public:
 	CrossRoad();
 	~CrossRoad();
@@ -41,32 +54,58 @@ CrossRoad::~CrossRoad()
 {
 }
 
-class Cars : CrossRoad
+
+class Cars //Машины, тут будет и обработка координат и передача спрайта
 {
 public:
-	Cars();
+	Cars(char);
+	
 	~Cars();
-
+	
+protected:
+	sf::Vector2f position;
 private:
 	sf::Texture texture;
-	int car_number;
+	enum class direction {North, South, East, West};
+	direction direction; //Узнаем направление(и чтобы давать имена)
+	static int count;   //считаем машинки(и чтобы давать им имена)
+	std::string car_number;
 
+
+
+	void spawn_car();
 };
 
-Cars::Cars()
+Cars::Cars(char x)
 {
+	
+	car_number = count + "_" + x;
+	count++;
+	switch (x) //Определим, в какую сторону поедет машинка
+	{
+	case 'N': direction = direction::North; break;
+	case 'S': direction = direction::South; break;
+	case 'E': direction = direction::East; break;
+	case 'W': direction = direction::West; break;
+	default:
+		std::cout << "Не понимаю. в какую сторону едем?" << std::endl;
+		break;
+	}
 }
 
 Cars::~Cars()
 {
 }
 
+void Cars::spawn_car() {
+
+}
  
 
-class Traffic_Lights : CrossRoad
+class Traffic_Lights //Светофор, он будет давать сигналы перекрестку о том, какая дорога закрыта
 {
 public:
-	Traffic_Lights();
+	Traffic_Lights(char);
 	~Traffic_Lights();
 	void change_light() { //смена цвета светофора
 		time1 = clock.getElapsedTime();
@@ -88,12 +127,18 @@ private:
 
 };
 
-Traffic_Lights::Traffic_Lights()
+Traffic_Lights::Traffic_Lights(char x)
 {
 	lights_color color = lights_color::RED;
-	std::cout << "RED" << std::endl;
-
-	
+	switch (x) //Определим, c каким цветом будет светофор
+	{
+	case 'R': color = lights_color::RED; break;
+	case 'G': color = lights_color::GREEN; break;
+	default:
+		std::cout << "Не понимаю, какой цвет?" << std::endl;
+		break;
+	}
+	std::cout << (color == lights_color::GREEN ? "GREEN" : "RED") << std::endl;
 }
 
 Traffic_Lights::~Traffic_Lights()
@@ -101,3 +146,4 @@ Traffic_Lights::~Traffic_Lights()
 }
 
 
+int Cars::count = 0;

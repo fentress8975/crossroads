@@ -38,10 +38,23 @@ void game() {
 			//std::cout << "x = " << mousePos.x << " y = " << mousePos.y << std::endl;
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 				//std::cout << "ЛКМ" << std::endl;
-				if ((mousePos.x >= spawnN0.x && mousePos.x <= spawnN1.x) && (mousePos.y >= spawnN0.y && mousePos.y <= spawnN1.y)) { std::cout << "Спаун Северный" << std::endl; }
-				else if ((mousePos.x >= spawnS0.x && mousePos.x <= spawnS1.x) && (mousePos.y >= spawnS0.y && mousePos.y <= spawnS1.y)) { std::cout << "Спаун Юг" << std::endl; }
-				else if ((mousePos.x >= spawnE0.x && mousePos.x <= spawnE1.x) && (mousePos.y >= spawnE0.y && mousePos.y <= spawnE1.y)) { std::cout << "Спаун Восток" << std::endl; }
-				else if ((mousePos.x >= spawnW0.x && mousePos.x <= spawnW1.x) && (mousePos.y >= spawnW0.y && mousePos.y <= spawnW1.y)) { std::cout << "Спаун Запад" << std::endl; }
+				if ((mousePos.x >= spawnN0.x && mousePos.x <= spawnN1.x) && (mousePos.y >= spawnN0.y && mousePos.y <= spawnN1.y)) { 
+					std::cout << "Спаун Северный" << std::endl; 
+					Cars carn('N');
+					window.draw(carn.update());
+				}
+				else if ((mousePos.x >= spawnS0.x && mousePos.x <= spawnS1.x) && (mousePos.y >= spawnS0.y && mousePos.y <= spawnS1.y)) { 
+					std::cout << "Спаун Юг" << std::endl; 
+					Cars cars('S');
+				}
+				else if ((mousePos.x >= spawnE0.x && mousePos.x <= spawnE1.x) && (mousePos.y >= spawnE0.y && mousePos.y <= spawnE1.y)) {
+					std::cout << "Спаун Восток" << std::endl; 
+					Cars care('E');
+				}
+				else if ((mousePos.x >= spawnW0.x && mousePos.x <= spawnW1.x) && (mousePos.y >= spawnW0.y && mousePos.y <= spawnW1.y)) {
+					std::cout << "Спаун Запад" << std::endl; 
+					Cars carw('W');
+				}
 				std::cout << "x = " << mousePos.x << " y = " << mousePos.y << std::endl;
 			}
 
@@ -50,6 +63,7 @@ void game() {
 		window.draw(crossroad1.update());
 		window.draw(lightEW.update());
 		window.draw(lightSN.update());
+		//window.draw(carn.update());
 
 		
 

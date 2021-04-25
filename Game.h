@@ -56,47 +56,97 @@ CrossRoad::~CrossRoad()
 class Cars //Машины, тут будет и обработка координат и передача спрайта
 {
 public:
-	Cars(char);
-	
+	Cars(char,char);
 	~Cars();
-	
+	void spawn_car(char);
+	bool isActive(std::list<Cars>,char);//ПРоверка спауна, что там нету машинки
+	static std::list<Cars> cars;
+
 protected:
 	sf::Vector2f position;
 private:
 	sf::Texture texture;
 	enum class direction {North, South, East, West};
-	direction direction; //Узнаем направление(и чтобы давать имена)
+	direction direction; //Узнаем направление
 	static int count;   //считаем машинки(и чтобы давать им имена)
 	std::string car_number;
+	void destroy() { //Для удаление машинок за экраном
+		for (auto iter = cars.begin(); iter != cars.end(); iter++) {
+			Cars* temp_car = &(*iter);
+			if (temp_car->position.x > 850 || temp_car->position.y > 850 || temp_car->position.x < -50 || temp_car->position.y < -50) { //если машинка за экраном, удаляем объект и указатель
+				delete temp_car;
+				cars.erase(iter);
+			}
+		}
+	}
 
 
 
-	void spawn_car();
+	
 };
 
-Cars::Cars(char x)
+Cars::Cars(char number,char dir)
 {
 	
-	car_number = count + "_" + x;
+	car_number = count + "_" + number;
 	count++;
-	switch (x) //Определим, в какую сторону поедет машинка
+	switch (dir) //Определим, в какую сторону поедет машинка
 	{
 	case 'N': direction = direction::North; break;
 	case 'S': direction = direction::South; break;
 	case 'E': direction = direction::East; break;
 	case 'W': direction = direction::West; break;
 	default:
-		std::cout << "Не понимаю. в какую сторону едем?" << std::endl;
+		std::cout << "Не понимаю, в какую сторону едем?(N S E W)" << std::endl;
 		break;
 	}
 }
 
 Cars::~Cars()
 {
+	--count;
 }
 
-void Cars::spawn_car() {
+void Cars::spawn_car(char direction) {
 
+}
+bool Cars::isActive(std::list<Cars> cars,char dir) { //ПРоверка спауна, что там нету машинки
+	switch (dir) 
+	{
+	case 'N':
+		for (auto iter = cars.begin(); iter != cars.end(); iter++) {
+			Cars* temp_car = &(*iter);
+			if (temp_car->direction != direction::North)continue;
+			if ((temp_car->position.x >= spawnN0.x && temp_car->position.x <= spawnN1.x) && (temp_car->position.y >= spawnN0.y && temp_car->position.y <= spawnN1.y)) return false;
+		}
+		break;
+	case 'S':
+		for (auto iter = cars.begin(); iter != cars.end(); iter++) {
+			Cars* temp_car = &(*iter);
+			if (temp_car->direction != direction::South)continue;
+			if ((temp_car->position.x >= spawnS0.x && temp_car->position.x <= spawnS1.x) && (temp_car->position.y >= spawnS0.y && temp_car->position.y <= spawnS1.y)) return false;
+		}
+		break;
+	case 'E':
+		for (auto iter = cars.begin(); iter != cars.end(); iter++) {
+			Cars* temp_car = &(*iter);
+			if (temp_car->direction != direction::East)continue;
+			if ((temp_car->position.x >= spawnE0.x && temp_car->position.x <= spawnE1.x) && (temp_car->position.y >= spawnE0.y && temp_car->position.y <= spawnE1.y)) return false;
+		}
+		break;
+	case 'W':
+		for (auto iter = cars.begin(); iter != cars.end(); iter++) {
+			Cars* temp_car = &(*iter);
+			if (temp_car->direction != direction::West)continue;
+			if ((temp_car->position.x >= spawnW0.x && temp_car->position.x <= spawnW1.x) && (temp_car->position.y >= spawnW0.y && temp_car->position.y <= spawnW1.y)) return false;
+			
+		}
+		break;
+	default:
+		return false;
+		break;
+	}
+	return true;
 }
  
 

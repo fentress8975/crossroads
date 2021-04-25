@@ -14,9 +14,7 @@ void game() {
 	Traffic_Lights lightSN('G','S');
 	Traffic_Lights lightEW('R', 'E');
 	std::list<sf::Sprite> toDraw; //В этот массив скидываем все на отрисовку
-	toDraw.push_back(crossroad1.update());
-	toDraw.push_back(lightSN.update());
-	toDraw.push_back(lightEW.update());
+
 
 	///////////////////////////////
 
@@ -52,6 +50,8 @@ void game() {
 		window.draw(crossroad1.update());
 		window.draw(lightEW.update());
 		window.draw(lightSN.update());
+
+		
 
 		//for (auto iter = toDraw.begin(); iter != toDraw.end(); iter++) window.draw(*iter); // отрисовка спрайтов
 		window.display();

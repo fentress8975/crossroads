@@ -16,6 +16,8 @@ void game() {
 	window.setFramerateLimit(framerame_limit);
 	initWindow(window);
 
+	std::list<Traffic_Lights> ::iterator iterL;
+
 	///////////////////////////////
 	CrossRoad crossroad1;
 	Traffic_Lights lightSN('G','S');
@@ -23,6 +25,7 @@ void game() {
 	std::list<Traffic_Lights> lights;
 	lights.push_back(lightSN);
 	lights.push_back(lightEW);
+	
 	Cars cars;
 	Draw cross(cars.getCars(),lights);
 
@@ -34,15 +37,16 @@ void game() {
 	{
 		lightSN.change_light();
 		lightEW.change_light();
-		for (auto iter = lights.begin(); iter != lights.end(); iter++) {
-			(*iter).update();
+		for (iterL = lights.begin(); iterL != lights.end(); ++iterL) iterL->update();
+		//for (auto iter = lights.begin(); iter != lights.end(); iter++) { //не работает!
+			//(*iter).update();
 			
 			//std::cout << x->canGo() << std::endl;
 
-		}//не работает!
+		//}
 
-		//lightEW.update();
-		//lightSN.update();
+		lightEW.update();
+		lightSN.update();
 		//crossroad1.update(cars, lights);
 		sf::Event event;
 		while (window.pollEvent(event))

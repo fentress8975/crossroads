@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <iterator>
 
 const int window_w = 800;   //Ўирина и высота окна
 const int window_h = 800;

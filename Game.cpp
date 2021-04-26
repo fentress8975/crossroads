@@ -16,18 +16,21 @@ void game() {
 	window.setFramerateLimit(framerame_limit);
 	initWindow(window);
 
-	std::list<Traffic_Lights> ::iterator iterL;
+	std::list<Traffic_Lights*> ::iterator iterL;
 
 	///////////////////////////////
 	CrossRoad crossroad1;
-	Traffic_Lights lightSN('G','S');
-	Traffic_Lights lightEW('R', 'E');
-	std::list<Traffic_Lights> lights;
+	Traffic_Lights* lightSN = new Traffic_Lights('G', 'S');
+	Traffic_Lights* lightEW = new Traffic_Lights('R', 'E');
+	
+
+	std::list<Traffic_Lights*> lights;
 	lights.push_back(lightSN);
 	lights.push_back(lightEW);
 	
 	Cars cars;
-	Draw cross(cars.getCars(),lights);
+	std::list<Car*>* car_list = cars.getCars();
+	Draw cross(car_list,lights);
 
 	///////////////////////////////
 
@@ -35,19 +38,10 @@ void game() {
 
 	while (window.isOpen())
 	{
-		lightSN.change_light();
-		lightEW.change_light();
-		for (iterL = lights.begin(); iterL != lights.end(); ++iterL) iterL->update();
-		//for (auto iter = lights.begin(); iter != lights.end(); iter++) { //не работает!
-			//(*iter).update();
-			
-			//std::cout << x->canGo() << std::endl;
-
-		//}
-
-		lightEW.update();
-		lightSN.update();
-		//crossroad1.update(cars, lights);
+		lightSN->change_light();
+		lightEW->change_light();
+		cars.destroy();
+		crossroad1.update(car_list, lights);
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -57,7 +51,6 @@ void game() {
 				window.close();
 
 			mousePos = sf::Mouse::getPosition(window);
-			//std::cout << "x = " << mousePos.x << " y = " << mousePos.y << std::endl;
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 				//std::cout << "ЛКМ" << std::endl;
 				if ((mousePos.x >= spawnN0.x && mousePos.x <= spawnN1.x) && (mousePos.y >= spawnN0.y && mousePos.y <= spawnN1.y)) { 
@@ -80,14 +73,10 @@ void game() {
 			}
 
 		}
+		
 		window.clear(sf::Color::Black);
 		window.draw(crossroad1.start());
 		window.draw(cross);
-		window.draw(lightEW.getSprite());
-		window.draw(lightSN.getSprite());
-		//for (auto iter = lights.begin(); iter != lights.end(); iter++) {
-			//window.draw(iter->getSprite()); // отрисовка спрайтов
-		//}
 		window.display();
 	}
 

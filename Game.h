@@ -13,23 +13,35 @@ sf::Vector2f carSize(16, 8);//–азмер машинки(не примерный)
 
 // по этим координатом будем определ€ть, где хот€т заспаунить машинку,
 // можно сказать это как невидимые квадратные кнопки
-const sf::Vector2f spawnN0(centerMap.x - roadSize.x, centerMap.y - centerMap.y); //это например верхний левый угол —еверного спауна
-const sf::Vector2f spawnN1(centerMap.x + roadSize.x, centerMap.y - centerMap.y + roadSize.y); //а это нижний левый
+const sf::Vector2f spawnN0(	centerMap.x - roadSize.x, 
+							centerMap.y - centerMap.y); //это например верхний левый угол —еверного спауна
+const sf::Vector2f spawnN1(	centerMap.x + roadSize.x, 
+							centerMap.y - centerMap.y + roadSize.y); //а это нижний левый
 //////////////////////////////////// 
-const sf::Vector2f spawnS0(centerMap.x - roadSize.x, centerMap.y + centerMap.y - roadSize.y);
-const sf::Vector2f spawnS1(centerMap.x + roadSize.x, centerMap.y + centerMap.y);
+const sf::Vector2f spawnS0(	centerMap.x - roadSize.x, 
+							centerMap.y + centerMap.y - roadSize.y);
+const sf::Vector2f spawnS1(	centerMap.x + roadSize.x, 
+							centerMap.y + centerMap.y);
 //////////////////////////////////// 
-const sf::Vector2f spawnE0(centerMap.x + centerMap.x - roadSize.x, centerMap.y - roadSize.y);
-const sf::Vector2f spawnE1(centerMap.x + centerMap.x, centerMap.y + roadSize.y);
+const sf::Vector2f spawnE0(	centerMap.x + centerMap.x - roadSize.x, 
+							centerMap.y - roadSize.y);
+const sf::Vector2f spawnE1(	centerMap.x + centerMap.x, 
+							centerMap.y + roadSize.y);
 //////////////////////////////////// 
-const sf::Vector2f spawnW0(centerMap.x - centerMap.x, centerMap.y - roadSize.y);
-const sf::Vector2f spawnW1(centerMap.x - centerMap.x + roadSize.x, centerMap.y + roadSize.y);
+const sf::Vector2f spawnW0(	centerMap.x - centerMap.x, 
+							centerMap.y - roadSize.y);
+const sf::Vector2f spawnW1(	centerMap.x - centerMap.x + roadSize.x, 
+							centerMap.y + roadSize.y);
 //////////////////////////////////// 
 /// координаты спауна машин
-const sf::Vector2f spawn_carN(centerMap.x - carSize.y, centerMap.y - centerMap.y);
-const sf::Vector2f spawn_carS(centerMap.x + carSize.y, centerMap.y + centerMap.y);
-const sf::Vector2f spawn_carE(centerMap.x + centerMap.x, centerMap.y - carSize.y);
-const sf::Vector2f spawn_carW(centerMap.x - centerMap.x, centerMap.y + carSize.y);
+const sf::Vector2f spawn_carN(	centerMap.x - carSize.y, 
+								centerMap.y - centerMap.y);
+const sf::Vector2f spawn_carS(	centerMap.x + carSize.y, 
+								centerMap.y + centerMap.y);
+const sf::Vector2f spawn_carE(	centerMap.x + centerMap.x, 
+								centerMap.y - carSize.x);
+const sf::Vector2f spawn_carW(	centerMap.x - centerMap.x, 
+								centerMap.y + carSize.x);
 //////////////////////////////////// 
 /// координаты светофоров
 const sf::Vector2f spawn_lightSN(440, 440);
@@ -37,7 +49,7 @@ const sf::Vector2f spawn_lightEW(350, 365);
 ////////////////////////////////////
 
 void game();
-enum direction { North, South, East, West, SN, EW, ERROR };
+enum direction { North, South, East, West, SN, EW, ERROR }; //направлени€
 class Car;
 class Cars;
 class Traffic_Lights;
@@ -60,12 +72,11 @@ private:
 	sf::Vector2f position;
 	sf::Texture texture;
 	sf::Sprite sprite;
-	
 	direction direction;			//Ќаправление
 	enum direction getDir(char);
 	void destroy();
 	
-	float speed = 0.3;
+	float speed = 2.5;
 };
 
 class Cars						//ћашины, тут будет и обработка координат и передача спрайта
@@ -73,14 +84,14 @@ class Cars						//ћашины, тут будет и обработка координат и передача спрайта
 public:
 	Cars();
 	~Cars();
-	std::list<Car> cars;	//“ут хран€тс€ все машины
 	bool isActive(direction);		//ѕроверка спауна, что там нету машинки
 	void spawn_car(direction);
-	std::list<Car> getCars();
+	void destroy();				//ƒл€ удаление машинок за экраном
+	std::list<Car*>* getCars();
 
 private:
 	int count;			//считаем машинки(и чтобы давать им имена)
-	void destroy();				//ƒл€ удаление машинок за экраном
+	std::list<Car*> cars; //“ут хран€тс€ все машины
 };
 
 Cars::Cars()
@@ -94,8 +105,8 @@ Cars::~Cars()
 	
 }
 
-std::list<Car> Cars::getCars() {
-	return cars;
+std::list<Car*>* Cars::getCars() {
+	return &cars;
 }
 
 void Cars::spawn_car(direction dir) {
@@ -106,17 +117,21 @@ void Cars::spawn_car(direction dir) {
 		if (dir == East) car->setPos(spawn_carW);
 		if (dir == West) car->setPos(spawn_carE);
 		count++;
-		cars.push_back(*car);
+		cars.push_back(car);
 	}
 }
 
 void Cars::destroy() {
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
-		Car* temp_car = &(*iter);
-		if (temp_car->position.x > 850 || temp_car->position.y > 850 || temp_car->position.x < -50 || temp_car->position.y < -50) { //если машинка за экраном, удал€ем объект и указатель
-			delete temp_car;
+		Car* car = *iter;
+		if (car->position.x > centerMap.x+centerMap.x+carSize.x || 
+			car->position.y > centerMap.y + centerMap.y + carSize.x || 
+			car->position.x < centerMap.x - centerMap.x - carSize.x || 
+			car->position.y < centerMap.y - centerMap.y - carSize.x) { //если машинка за экраном, удал€ем объект и указатель
+			car->destroy();
 			cars.erase(iter);
 			--count;
+			break; //чтобы не ломалс€ итератор от потери в пространстве
 		}
 	}
 }
@@ -124,7 +139,7 @@ void Cars::destroy() {
 bool Cars::isActive(direction dir) {
 	if (cars.empty()) return true;		//если список пуст
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
-		Car* car = &(*iter);
+		Car* car = *iter;
 		if (dir == North) {
 			if ((car->position.x >= spawnN0.x && car->position.x <= spawnN1.x) && (car->position.y >= spawnN0.y && car->position.y <= spawnN1.y)) return false;
 		}
@@ -149,20 +164,23 @@ Car::Car(::direction dir)
 	texture.loadFromFile("img/car.png");
 	sprite.setTexture(texture);
 	direction = dir;
+	if (direction == North) { sprite.setRotation(-90); }
+	if (direction == South) { sprite.setRotation(90); }
+	std::cout << "Sozdal mashiny" << std::endl;
 
 }
 
 Car::~Car()
 {
-	texture.~Texture();
-	sprite.~Sprite();
+	std::cout << "ybil mashiny" << std::endl;
 }
 
 void Car::update(bool canGo) {
-	if (canGo) {
+	if (((position.x < centerMap.x - (roadSize.x * 2)) && (position.y < centerMap.x - (roadSize.x * 2)))
+		&& ((position.x > centerMap.x + (roadSize.x * 2)) && (position.y > centerMap.x - (roadSize.x * 2)))) { //если не р€дом с перекрестком
 		if (direction == South || direction == North) {
-			if (direction == North) position.y += speed;
-			if (direction == South) position.y -= speed;
+			if (direction == North) { position.y -= speed; }
+			if (direction == South) { position.y += speed; }
 
 		}
 		else if (direction == East || direction == West) {
@@ -170,12 +188,23 @@ void Car::update(bool canGo) {
 			if (direction == West) position.x -= speed;
 		}
 	}
+	else if (canGo) {
+		if (direction == South || direction == North) {
+			if (direction == North) { position.y -= speed; }
+			if (direction == South) { position.y += speed; }
+
+		}
+		else if (direction == East || direction == West) {
+			if (direction == East) position.x += speed;
+			if (direction == West) position.x -= speed;
+		}
+	}
+	sprite.setPosition(position);
 }
 
 void Car::destroy() {
-	if (position.x > 850 || position.y > 850 || position.x < -50 || position.y < -50) { //если машинка за экраном, удал€ем объект и указатель
+
 		delete this;
-	}
 }
 
 sf::Sprite Car::getSprite() const{
@@ -280,27 +309,6 @@ bool Traffic_Lights::canGo() {
 	return color == lights_color::GREEN ? true : false;
 }
 
-class Draw :public sf::Drawable {				//отрисовка всего и вс€
-public:
-	Draw(std::list<Car>, std::list<Traffic_Lights>);
-	std::list<Car> cars; 
-	std::list<Traffic_Lights> traffic_lights;
-	void draw(sf::RenderTarget& target, sf::RenderStates states)const override;  //перезагрузка отрисовка
-};
-
-Draw::Draw(std::list<Car> cars, std::list<Traffic_Lights> traffic_lights):cars(cars),traffic_lights(traffic_lights){
-	
-}
-
-void Draw::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-
-	for (auto iter = traffic_lights.begin(); iter != traffic_lights.end(); iter++) {
-		target.draw(iter->getSprite(), states);
-	}
-	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
-		target.draw(iter->getSprite());
-	}
-}
 
 class CrossRoad							//ѕерекресток, все обновл€ет
 {
@@ -316,7 +324,7 @@ public:
 		sprite.setTexture(texture);
 		return sprite;
 	}
-	void update(Cars, std::list<Traffic_Lights>) ; //ќбновл€ем все
+	void update(std::list<Car*>*, std::list<Traffic_Lights*>&) ; //ќбновл€ем все
 };
 
 CrossRoad::CrossRoad()
@@ -328,37 +336,51 @@ CrossRoad::~CrossRoad()
 {
 }
 
-void CrossRoad::update(Cars car, std::list<Traffic_Lights> traffic_lights) {
-	std::list<Car> cars = car.getCars();
+void CrossRoad::update(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffic_lights) {
 	Traffic_Lights* light_SN = nullptr;
 	Traffic_Lights* light_EW = nullptr;
-	std::cout << "vnachale" << std::endl;
-	for (auto iter = traffic_lights.begin(); iter != traffic_lights.end(); iter++) {
-		if (iter->getDir() == SN) { 
-			light_SN = &*iter; 
-			iter->update();
-			std::cout << "risy svetofor1" << std::endl;
+	std::list<Traffic_Lights*> ::iterator iterL;
+	std::list<Car*> ::iterator iterC;
+	for (iterL = traffic_lights.begin(); iterL != traffic_lights.end(); ++iterL) {
+		if ((*iterL)->getDir() == SN) {
+			light_SN = *iterL;
+			(*iterL)->update();
 		}
 		else {
-			light_EW = &*iter;
-			iter->update();
-			std::cout << "risy svetofor2" << std::endl;
+			light_EW = *iterL;
+			(*iterL)->update();
 		}
-		
 	}
-
-	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
-		if (iter->getDir() == North || iter->getDir() == South) {
-			iter->update(light_SN->canGo());
-			std::cout << "risy mashiny" << std::endl;
-
+	for (iterC = cars->begin(); iterC != cars->end(); ++iterC) {
+		if ((*iterC)->getDir() == North || (*iterC)->getDir() == South) {
+			(*iterC)->update(light_SN->canGo());
 		}
 
-		else if (iter->getDir() == East || iter->getDir() == West) {
-			iter->update(light_EW->canGo());
+		else if ((*iterC)->getDir() == East || (*iterC)->getDir() == West) {
+			(*iterC)->update(light_EW->canGo());
 		}
-
 	}
+}
 
 
+class Draw :public sf::Drawable {				//отрисовка всего и вс€
+public:
+	Draw(std::list<Car*>*, std::list<Traffic_Lights*>&);
+	std::list<Car*>* cars;
+	std::list<Traffic_Lights*> traffic_lights;
+	void draw(sf::RenderTarget& target, sf::RenderStates states)const override;  //перезагрузка отрисовка
+};
+
+Draw::Draw(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffic_lights) :cars(cars), traffic_lights(traffic_lights) {
+
+}
+
+void Draw::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+
+	for (auto iter = traffic_lights.begin(); iter != traffic_lights.end(); iter++) {
+		target.draw((*iter)->getSprite(), states);
+	}
+	for (auto iter = cars->begin(); iter != cars->end(); iter++) {
+		target.draw((*iter)->getSprite());
+	}
 }

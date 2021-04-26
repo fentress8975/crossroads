@@ -1,31 +1,49 @@
 #include "Game.h"
 
-
+void initWindow(sf::RenderWindow& window) {
+	sf::VideoMode videoMode(window_w, window_h);
+	const std::string title = "Crossroads";
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
+	window.create(videoMode, title, sf::Style::Default, settings);
+}
 
 void game() {
+
 	setlocale(LC_ALL, "rus");
 
-	sf::RenderWindow window(sf::VideoMode(window_w, window_h), "Crossroads");
+	sf::RenderWindow window;
 	window.setFramerateLimit(framerame_limit);
+	initWindow(window);
 
 	///////////////////////////////
-
 	CrossRoad crossroad1;
 	Traffic_Lights lightSN('G','S');
 	Traffic_Lights lightEW('R', 'E');
-	std::list<sf::Sprite> toDraw; //В этот массив скидываем все на отрисовку
-
+	std::list<Traffic_Lights> lights;
+	lights.push_back(lightSN);
+	lights.push_back(lightEW);
+	Cars cars;
+	Draw cross(cars.getCars(),lights);
 
 	///////////////////////////////
 
 	sf::Vector2i mousePos;
 
-
 	while (window.isOpen())
 	{
 		lightSN.change_light();
 		lightEW.change_light();
-		//crossroad1.update();
+		for (auto iter = lights.begin(); iter != lights.end(); iter++) {
+			(*iter).update();
+			
+			//std::cout << x->canGo() << std::endl;
+
+		}//не работает!
+
+		//lightEW.update();
+		//lightSN.update();
+		//crossroad1.update(cars, lights);
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -40,34 +58,32 @@ void game() {
 				//std::cout << "ЛКМ" << std::endl;
 				if ((mousePos.x >= spawnN0.x && mousePos.x <= spawnN1.x) && (mousePos.y >= spawnN0.y && mousePos.y <= spawnN1.y)) { 
 					std::cout << "Спаун Северный" << std::endl; 
-					Cars carn('N');
-					window.draw(carn.update());
+					cars.spawn_car(South);
 				}
 				else if ((mousePos.x >= spawnS0.x && mousePos.x <= spawnS1.x) && (mousePos.y >= spawnS0.y && mousePos.y <= spawnS1.y)) { 
 					std::cout << "Спаун Юг" << std::endl; 
-					Cars cars('S');
+					cars.spawn_car(North);
 				}
 				else if ((mousePos.x >= spawnE0.x && mousePos.x <= spawnE1.x) && (mousePos.y >= spawnE0.y && mousePos.y <= spawnE1.y)) {
 					std::cout << "Спаун Восток" << std::endl; 
-					Cars care('E');
+					cars.spawn_car(West);
 				}
 				else if ((mousePos.x >= spawnW0.x && mousePos.x <= spawnW1.x) && (mousePos.y >= spawnW0.y && mousePos.y <= spawnW1.y)) {
 					std::cout << "Спаун Запад" << std::endl; 
-					Cars carw('W');
+					cars.spawn_car(East);
 				}
 				std::cout << "x = " << mousePos.x << " y = " << mousePos.y << std::endl;
 			}
 
 		}
 		window.clear(sf::Color::Black);
-		window.draw(crossroad1.update());
-		window.draw(lightEW.update());
-		window.draw(lightSN.update());
-		//window.draw(carn.update());
-
-		
-
-		//for (auto iter = toDraw.begin(); iter != toDraw.end(); iter++) window.draw(*iter); // отрисовка спрайтов
+		window.draw(crossroad1.start());
+		window.draw(cross);
+		window.draw(lightEW.getSprite());
+		window.draw(lightSN.getSprite());
+		//for (auto iter = lights.begin(); iter != lights.end(); iter++) {
+			//window.draw(iter->getSprite()); // отрисовка спрайтов
+		//}
 		window.display();
 	}
 

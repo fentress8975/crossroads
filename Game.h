@@ -4,19 +4,19 @@
 #include <list>
 #include <iterator>
 
-const int window_w = 800;   //Ширина и высота окна
+const int window_w = 800;					//Ширина и высота окна
 const int window_h = 800;
-const int framerame_limit = 60;   //Лимит фпс
-const sf::Vector2f centerMap(400, 400);  //Центр карты
-sf::Vector2f roadSize(30, 30); // Размер дороги(примерный)
-sf::Vector2f carSize(16, 8);//Размер машинки(не примерный)
+const int framerame_limit = 60;				//Лимит фпс
+const sf::Vector2f centerMap(400, 400);		//Центр карты
+sf::Vector2f roadSize(30, 30);				//Размер дороги(примерный)
+sf::Vector2f carSize(16, 8);				//Размер машинки(не примерный)
 
 // по этим координатом будем определять, где хотят заспаунить машинку,
 // можно сказать это как невидимые квадратные кнопки
 const sf::Vector2f spawnN0(	centerMap.x - roadSize.x, 
 							centerMap.y - centerMap.y); //это например верхний левый угол Северного спауна
 const sf::Vector2f spawnN1(	centerMap.x + roadSize.x, 
-							centerMap.y - centerMap.y + roadSize.y); //а это нижний левый
+							centerMap.y - centerMap.y + roadSize.y); //а это нижний правый
 //////////////////////////////////// 
 const sf::Vector2f spawnS0(	centerMap.x - roadSize.x, 
 							centerMap.y + centerMap.y - roadSize.y);
@@ -61,13 +61,13 @@ class Car
 public:
 	Car(direction);
 	~Car();
-	friend class Cars;			//Очень сильно решает проблему с доступом, так что не трогать
-	sf::Sprite getSprite() const;		//Для отрисовщика
+	friend class Cars;				//Очень сильно решает проблему с доступом, так что не трогать
+	sf::Sprite getSprite() const;	//Для отрисовщика
 	::direction getDir() {
 		return direction;
 	}
 	void setPos(sf::Vector2f);
-	void update(bool);
+	void update(bool);				//обновление координат
 private:
 	sf::Vector2f position;
 	sf::Texture texture;
@@ -75,23 +75,47 @@ private:
 	direction direction;			//Направление
 	enum direction getDir(char);
 	void destroy();
-	
-	float speed = 2.5;
+	float acceacceleration = 0.3;
+	float breaks = 0.5;
+	float speed = 0;
+	float max_speed = 3.0;			//иногда миллиардные мешают циклу
+	void go() {
+		if (speed < max_speed) {
+			speed += acceacceleration;
+		}
+		if (direction == North) {
+			position.y -= speed;
+		}
+		if (direction == South) {
+			position.y += speed;
+		}
+		if (direction == East) {
+			position.x += speed;
+		}
+		if (direction == West) {
+			position.x -= speed;
+		}
+
+	}
+	void stop() {
+		if (speed > 0) { speed -= breaks; }
+		if (speed < 0) { speed = 0; }
+	}
 };
 
-class Cars						//Машины, тут будет и обработка координат и передача спрайта
+class Cars							//Машины, тут будет и обработка координат и передача спрайта
 {
 public:
 	Cars();
 	~Cars();
 	bool isActive(direction);		//Проверка спауна, что там нету машинки
-	void spawn_car(direction);
-	void destroy();				//Для удаление машинок за экраном
+	void spawn_car(direction);		//создает машину по клику
+	void destroy();					//Для удаление машинок за экраном
 	std::list<Car*>* getCars();
 
 private:
-	int count;			//считаем машинки(и чтобы давать им имена)
-	std::list<Car*> cars; //Тут хранятся все машины
+	int count;						//считаем машинки(и чтобы давать им имена)
+	std::list<Car*> cars;			//Тут хранятся все машины
 };
 
 Cars::Cars()
@@ -110,14 +134,16 @@ std::list<Car*>* Cars::getCars() {
 }
 
 void Cars::spawn_car(direction dir) {
-	if (isActive(dir)) {
-		Car* car = new Car(dir);
-		if (dir == North) car->setPos(spawn_carS);
-		if (dir == South) car->setPos(spawn_carN);
-		if (dir == East) car->setPos(spawn_carW);
-		if (dir == West) car->setPos(spawn_carE);
-		count++;
-		cars.push_back(car);
+	if (count < 6) {
+		if (isActive(dir)) {
+			Car* car = new Car(dir);
+			if (dir == North) car->setPos(spawn_carS);
+			if (dir == South) car->setPos(spawn_carN);
+			if (dir == East) car->setPos(spawn_carW);
+			if (dir == West) car->setPos(spawn_carE);
+			count++;
+			cars.push_back(car);
+		}
 	}
 }
 
@@ -140,19 +166,22 @@ bool Cars::isActive(direction dir) {
 	if (cars.empty()) return true;		//если список пуст
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
 		Car* car = *iter;
-		if (dir == North) {
-			if ((car->position.x >= spawnN0.x && car->position.x <= spawnN1.x) && (car->position.y >= spawnN0.y && car->position.y <= spawnN1.y)) return false;
+		if (dir == South) {
+			if ((car->position.x >= spawnN0.x && car->position.x <= spawnN1.x) && 
+				(car->position.y >= spawnN0.y && car->position.y <= spawnN1.y)) return false;
 		}
-		else if (dir == South) {
-			if ((car->position.x >= spawnS0.x && car->position.x <= spawnS1.x) && (car->position.y >= spawnS0.y && car->position.y <= spawnS1.y)) return false;
-		}
-		else if (dir == East) {
-			if ((car->position.x >= spawnE0.x && car->position.x <= spawnE1.x) && (car->position.y >= spawnE0.y && car->position.y <= spawnE1.y)) return false;
+		else if (dir == North) {
+			if ((car->position.x >= spawnS0.x && car->position.x <= spawnS1.x) && 
+				(car->position.y >= spawnS0.y && car->position.y <= spawnS1.y)) return false;
 		}
 		else if (dir == West) {
-			if ((car->position.x >= spawnE0.x && car->position.x <= spawnE1.x) && (car->position.y >= spawnE0.y && car->position.y <= spawnE1.y)) return false;
+			if ((car->position.x >= spawnE0.x && car->position.x <= spawnE1.x) && 
+				(car->position.y >= spawnE0.y && car->position.y <= spawnE1.y)) return false;
 		}
-		else continue;
+		else if (dir == East) {
+			if ((car->position.x >= spawnW0.x && car->position.x <= spawnW1.x) && 
+				(car->position.y >= spawnW0.y && car->position.y <= spawnW1.y)) return false;
+		}
 	}
 	return true;
 }
@@ -164,8 +193,8 @@ Car::Car(::direction dir)
 	texture.loadFromFile("img/car.png");
 	sprite.setTexture(texture);
 	direction = dir;
-	if (direction == North) { sprite.setRotation(-90); }
-	if (direction == South) { sprite.setRotation(90); }
+	if (direction == North) { sprite.setRotation(90); }
+	if (direction == South) { sprite.setRotation(-90); }
 	std::cout << "Sozdal mashiny" << std::endl;
 
 }
@@ -176,29 +205,49 @@ Car::~Car()
 }
 
 void Car::update(bool canGo) {
-	if (((position.x < centerMap.x - (roadSize.x * 2)) && (position.y < centerMap.x - (roadSize.x * 2)))
-		&& ((position.x > centerMap.x + (roadSize.x * 2)) && (position.y > centerMap.x - (roadSize.x * 2)))) { //если не рядом с перекрестком
-		if (direction == South || direction == North) {
-			if (direction == North) { position.y -= speed; }
-			if (direction == South) { position.y += speed; }
-
+	if ((position.x <= (centerMap.x + roadSize.x)) && (position.x >= (centerMap.x - roadSize.x)) &&
+		(position.y <= (centerMap.y + roadSize.y)) && (position.y >= (centerMap.y - roadSize.y))) {
+		go();
+	}
+	else {
+		if (direction == North) {
+			if ((position.y <= centerMap.y) || (position.y >= (centerMap.y + (roadSize.y + 20)))) {
+				go();
+			}
+			else if (canGo) {
+				go();
+			}
+			else { stop(); }
 		}
-		else if (direction == East || direction == West) {
-			if (direction == East) position.x += speed;
-			if (direction == West) position.x -= speed;
+		if (direction == South) {
+			if ((position.y <= (centerMap.y - (roadSize.y + 20))) || (position.y >= centerMap.y)) {
+				go();
+			}
+			else if (canGo) {
+				go();
+			}
+			else { stop(); }
+		}
+		if (direction == East) {
+			if ((position.x <= (centerMap.x - (roadSize.x + 20))) || (position.x >= centerMap.x)) {
+				go();
+			}
+			else if (canGo) {
+				go();
+			}
+			else { stop(); }
+		}
+		if (direction == West) {
+			if ((position.x <= (centerMap.x - roadSize.x)) || (position.x >= (centerMap.x + (roadSize.x + 20)))) {
+				go();
+			}
+			else if (canGo) {
+				go();
+			}
+			else { stop(); }
 		}
 	}
-	else if (canGo) {
-		if (direction == South || direction == North) {
-			if (direction == North) { position.y -= speed; }
-			if (direction == South) { position.y += speed; }
-
-		}
-		else if (direction == East || direction == West) {
-			if (direction == East) position.x += speed;
-			if (direction == West) position.x -= speed;
-		}
-	}
+	
 	sprite.setPosition(position);
 }
 

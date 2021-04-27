@@ -9,8 +9,7 @@ void initWindow(sf::RenderWindow& window) {
 }
 
 void game() {
-
-	setlocale(LC_ALL, "rus");
+	system("chcp 65001");
 
 	sf::RenderWindow window;
 	window.setFramerateLimit(framerame_limit);
@@ -52,21 +51,21 @@ void game() {
 
 			mousePos = sf::Mouse::getPosition(window);
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-				//std::cout << "ËÊÌ" << std::endl;
+				//std::cout << "Ð›ÐšÐœ" << std::endl;
 				if ((mousePos.x >= spawnN0.x && mousePos.x <= spawnN1.x) && (mousePos.y >= spawnN0.y && mousePos.y <= spawnN1.y)) { 
-					std::cout << "Ñïàóí Ñåâåðíûé" << std::endl; 
+					std::cout << "Ð¡Ð¿Ð°ÑƒÐ½ Ð¡ÐµÐ²ÐµÑ€Ð½Ñ‹Ð¹" << std::endl; 
 					cars.spawn_car(South);
 				}
 				else if ((mousePos.x >= spawnS0.x && mousePos.x <= spawnS1.x) && (mousePos.y >= spawnS0.y && mousePos.y <= spawnS1.y)) { 
-					std::cout << "Ñïàóí Þã" << std::endl; 
+					std::cout << "Ð¡Ð¿Ð°ÑƒÐ½ Ð®Ð³" << std::endl; 
 					cars.spawn_car(North);
 				}
 				else if ((mousePos.x >= spawnE0.x && mousePos.x <= spawnE1.x) && (mousePos.y >= spawnE0.y && mousePos.y <= spawnE1.y)) {
-					std::cout << "Ñïàóí Âîñòîê" << std::endl; 
+					std::cout << "Ð¡Ð¿Ð°ÑƒÐ½ Ð’Ð¾ÑÑ‚Ð¾Ðº" << std::endl; 
 					cars.spawn_car(West);
 				}
 				else if ((mousePos.x >= spawnW0.x && mousePos.x <= spawnW1.x) && (mousePos.y >= spawnW0.y && mousePos.y <= spawnW1.y)) {
-					std::cout << "Ñïàóí Çàïàä" << std::endl; 
+					std::cout << "Ð¡Ð¿Ð°ÑƒÐ½ Ð—Ð°Ð¿Ð°Ð´" << std::endl; 
 					cars.spawn_car(East);
 				}
 				std::cout << "x = " << mousePos.x << " y = " << mousePos.y << std::endl;

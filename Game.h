@@ -4,19 +4,19 @@
 #include <list>
 #include <iterator>
 
-const int window_w = 800;					//Ширина и высота окна
+const int window_w = 800;					//РЁРёСЂРёРЅР° Рё РІС‹СЃРѕС‚Р° РѕРєРЅР°
 const int window_h = 800;
-const int framerame_limit = 60;				//Лимит фпс
-const sf::Vector2f centerMap(400, 400);		//Центр карты
-sf::Vector2f roadSize(30, 30);				//Размер дороги(примерный)
-sf::Vector2f carSize(16, 8);				//Размер машинки(не примерный)
+const int framerame_limit = 60;				//Р›РёРјРёС‚ С„РїСЃ
+const sf::Vector2f centerMap(400, 400);		//Р¦РµРЅС‚СЂ РєР°СЂС‚С‹
+sf::Vector2f roadSize(30, 30);				//Р Р°Р·РјРµСЂ РґРѕСЂРѕРіРё(РїСЂРёРјРµСЂРЅС‹Р№)
+sf::Vector2f carSize(16, 8);				//Р Р°Р·РјРµСЂ РјР°С€РёРЅРєРё(РЅРµ РїСЂРёРјРµСЂРЅС‹Р№)
 
-// по этим координатом будем определять, где хотят заспаунить машинку,
-// можно сказать это как невидимые квадратные кнопки
+// РїРѕ СЌС‚РёРј РєРѕРѕСЂРґРёРЅР°С‚РѕРј Р±СѓРґРµРј РѕРїСЂРµРґРµР»СЏС‚СЊ, РіРґРµ С…РѕС‚СЏС‚ Р·Р°СЃРїР°СѓРЅРёС‚СЊ РјР°С€РёРЅРєСѓ,
+// РјРѕР¶РЅРѕ СЃРєР°Р·Р°С‚СЊ СЌС‚Рѕ РєР°Рє РЅРµРІРёРґРёРјС‹Рµ РєРІР°РґСЂР°С‚РЅС‹Рµ РєРЅРѕРїРєРё
 const sf::Vector2f spawnN0(	centerMap.x - roadSize.x, 
-							centerMap.y - centerMap.y); //это например верхний левый угол Северного спауна
+							centerMap.y - centerMap.y); //СЌС‚Рѕ РЅР°РїСЂРёРјРµСЂ РІРµСЂС…РЅРёР№ Р»РµРІС‹Р№ СѓРіРѕР» РЎРµРІРµСЂРЅРѕРіРѕ СЃРїР°СѓРЅР°
 const sf::Vector2f spawnN1(	centerMap.x + roadSize.x, 
-							centerMap.y - centerMap.y + roadSize.y); //а это нижний правый
+							centerMap.y - centerMap.y + roadSize.y); //Р° СЌС‚Рѕ РЅРёР¶РЅРёР№ РїСЂР°РІС‹Р№
 //////////////////////////////////// 
 const sf::Vector2f spawnS0(	centerMap.x - roadSize.x, 
 							centerMap.y + centerMap.y - roadSize.y);
@@ -33,7 +33,7 @@ const sf::Vector2f spawnW0(	centerMap.x - centerMap.x,
 const sf::Vector2f spawnW1(	centerMap.x - centerMap.x + roadSize.x, 
 							centerMap.y + roadSize.y);
 //////////////////////////////////// 
-/// координаты спауна машин
+/// РєРѕРѕСЂРґРёРЅР°С‚С‹ СЃРїР°СѓРЅР° РјР°С€РёРЅ
 const sf::Vector2f spawn_carN(	centerMap.x - carSize.y, 
 								centerMap.y - centerMap.y);
 const sf::Vector2f spawn_carS(	centerMap.x + carSize.y, 
@@ -43,13 +43,13 @@ const sf::Vector2f spawn_carE(	centerMap.x + centerMap.x,
 const sf::Vector2f spawn_carW(	centerMap.x - centerMap.x, 
 								centerMap.y + carSize.x);
 //////////////////////////////////// 
-/// координаты светофоров
+/// РєРѕРѕСЂРґРёРЅР°С‚С‹ СЃРІРµС‚РѕС„РѕСЂРѕРІ
 const sf::Vector2f spawn_lightSN(440, 440);
 const sf::Vector2f spawn_lightEW(350, 365);
 ////////////////////////////////////
 
 void game();
-enum direction { North, South, East, West, SN, EW, ERROR }; //направления
+enum direction { North, South, East, West, SN, EW, ERROR }; //РЅР°РїСЂР°РІР»РµРЅРёСЏ
 class Car;
 class Cars;
 class Traffic_Lights;
@@ -61,24 +61,24 @@ class Car
 public:
 	Car(direction);
 	~Car();
-	friend class Cars;				//Очень сильно решает проблему с доступом, так что не трогать
-	sf::Sprite getSprite() const;	//Для отрисовщика
+	friend class Cars;				//РћС‡РµРЅСЊ СЃРёР»СЊРЅРѕ СЂРµС€Р°РµС‚ РїСЂРѕР±Р»РµРјСѓ СЃ РґРѕСЃС‚СѓРїРѕРј, С‚Р°Рє С‡С‚Рѕ РЅРµ С‚СЂРѕРіР°С‚СЊ
+	sf::Sprite getSprite() const;	//Р”Р»СЏ РѕС‚СЂРёСЃРѕРІС‰РёРєР°
 	::direction getDir() {
 		return direction;
 	}
 	void setPos(sf::Vector2f);
-	void update(bool);				//обновление координат
+	void update(bool);				//РѕР±РЅРѕРІР»РµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚
 private:
 	sf::Vector2f position;
 	sf::Texture texture;
 	sf::Sprite sprite;
-	direction direction;			//Направление
+	direction direction;			//РќР°РїСЂР°РІР»РµРЅРёРµ
 	enum direction getDir(char);
 	void destroy();
 	float acceacceleration = 0.3;
 	float breaks = 0.5;
 	float speed = 0;
-	float max_speed = 3.0;			//иногда миллиардные мешают циклу
+	float max_speed = 3.0;			//РёРЅРѕРіРґР° РјРёР»Р»РёР°СЂРґРЅС‹Рµ РјРµС€Р°СЋС‚ С†РёРєР»Сѓ
 	void go() {
 		if (speed < max_speed) {
 			speed += acceacceleration;
@@ -103,19 +103,19 @@ private:
 	}
 };
 
-class Cars							//Машины, тут будет и обработка координат и передача спрайта
+class Cars							//РњР°С€РёРЅС‹, С‚СѓС‚ Р±СѓРґРµС‚ Рё РѕР±СЂР°Р±РѕС‚РєР° РєРѕРѕСЂРґРёРЅР°С‚ Рё РїРµСЂРµРґР°С‡Р° СЃРїСЂР°Р№С‚Р°
 {
 public:
 	Cars();
 	~Cars();
-	bool isActive(direction);		//Проверка спауна, что там нету машинки
-	void spawn_car(direction);		//создает машину по клику
-	void destroy();					//Для удаление машинок за экраном
+	bool isActive(direction);		//РџСЂРѕРІРµСЂРєР° СЃРїР°СѓРЅР°, С‡С‚Рѕ С‚Р°Рј РЅРµС‚Сѓ РјР°С€РёРЅРєРё
+	void spawn_car(direction);		//СЃРѕР·РґР°РµС‚ РјР°С€РёРЅСѓ РїРѕ РєР»РёРєСѓ
+	void destroy();					//Р”Р»СЏ СѓРґР°Р»РµРЅРёРµ РјР°С€РёРЅРѕРє Р·Р° СЌРєСЂР°РЅРѕРј
 	std::list<Car*>* getCars();
 
 private:
-	int count;						//считаем машинки(и чтобы давать им имена)
-	std::list<Car*> cars;			//Тут хранятся все машины
+	int count;						//СЃС‡РёС‚Р°РµРј РјР°С€РёРЅРєРё(Рё С‡С‚РѕР±С‹ РґР°РІР°С‚СЊ РёРј РёРјРµРЅР°)
+	std::list<Car*> cars;			//РўСѓС‚ С…СЂР°РЅСЏС‚СЃСЏ РІСЃРµ РјР°С€РёРЅС‹
 };
 
 Cars::Cars()
@@ -153,17 +153,17 @@ void Cars::destroy() {
 		if (car->position.x > centerMap.x+centerMap.x+carSize.x || 
 			car->position.y > centerMap.y + centerMap.y + carSize.x || 
 			car->position.x < centerMap.x - centerMap.x - carSize.x || 
-			car->position.y < centerMap.y - centerMap.y - carSize.x) { //если машинка за экраном, удаляем объект и указатель
+			car->position.y < centerMap.y - centerMap.y - carSize.x) { //РµСЃР»Рё РјР°С€РёРЅРєР° Р·Р° СЌРєСЂР°РЅРѕРј, СѓРґР°Р»СЏРµРј РѕР±СЉРµРєС‚ Рё СѓРєР°Р·Р°С‚РµР»СЊ
 			car->destroy();
 			cars.erase(iter);
 			--count;
-			break; //чтобы не ломался итератор от потери в пространстве
+			break; //С‡С‚РѕР±С‹ РЅРµ Р»РѕРјР°Р»СЃСЏ РёС‚РµСЂР°С‚РѕСЂ РѕС‚ РїРѕС‚РµСЂРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ
 		}
 	}
 }
 
 bool Cars::isActive(direction dir) {
-	if (cars.empty()) return true;		//если список пуст
+	if (cars.empty()) return true;		//РµСЃР»Рё СЃРїРёСЃРѕРє РїСѓСЃС‚
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
 		Car* car = *iter;
 		if (dir == South) {
@@ -265,7 +265,7 @@ void Car::setPos(sf::Vector2f spawn) {
 	this->position.y = spawn.y;
 }
 
-class Traffic_Lights										//Светофор, он будет давать сигналы перекрестку о том, какая дорога закрыта
+class Traffic_Lights										//РЎРІРµС‚РѕС„РѕСЂ, РѕРЅ Р±СѓРґРµС‚ РґР°РІР°С‚СЊ СЃРёРіРЅР°Р»С‹ РїРµСЂРµРєСЂРµСЃС‚РєСѓ Рѕ С‚РѕРј, РєР°РєР°СЏ РґРѕСЂРѕРіР° Р·Р°РєСЂС‹С‚Р°
 {
 public:
 	Traffic_Lights(char,char);
@@ -279,9 +279,9 @@ public:
 	}
 	sf::Sprite getSprite() const;
 private:
-	enum class lights_color {RED, GREEN};					// переключатель для смены цвета светофора
+	enum class lights_color {RED, GREEN};					// РїРµСЂРµРєР»СЋС‡Р°С‚РµР»СЊ РґР»СЏ СЃРјРµРЅС‹ С†РІРµС‚Р° СЃРІРµС‚РѕС„РѕСЂР°
 	lights_color color;
-	sf::Clock clock;										//таймер для смены цвета
+	sf::Clock clock;										//С‚Р°Р№РјРµСЂ РґР»СЏ СЃРјРµРЅС‹ С†РІРµС‚Р°
 	sf::Time time1; 
 	sf::Texture texture_green;
 	sf::Texture texture_red;
@@ -294,7 +294,7 @@ Traffic_Lights::Traffic_Lights(char x, char y)
 {
 	texture_green.loadFromFile("img/traff_light_G.png");
 	texture_red.loadFromFile("img/traff_light_R.png");
-	switch (x)												 //Определим, c каким цветом будет светофор
+	switch (x)												 //РћРїСЂРµРґРµР»РёРј, c РєР°РєРёРј С†РІРµС‚РѕРј Р±СѓРґРµС‚ СЃРІРµС‚РѕС„РѕСЂ
 	{
 	case 'R': 
 		color = lights_color::RED;
@@ -305,11 +305,11 @@ Traffic_Lights::Traffic_Lights(char x, char y)
 		sprite.setTexture(texture_green);
 		break;
 	default:
-		std::cout << "Не понимаю, какой цвет?" << std::endl;
+		std::cout << "РќРµ РїРѕРЅРёРјР°СЋ, РєР°РєРѕР№ С†РІРµС‚?" << std::endl;
 		break;
 	}
 	std::cout << (color == lights_color::GREEN ? "GREEN" : "RED") << std::endl;
-	switch (y)												//Определим, на какое направление будет светофор
+	switch (y)												//РћРїСЂРµРґРµР»РёРј, РЅР° РєР°РєРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ Р±СѓРґРµС‚ СЃРІРµС‚РѕС„РѕСЂ
 	{
 	case 'S': 
 		sprite.setPosition(spawn_lightSN.x, spawn_lightSN.y);
@@ -321,7 +321,7 @@ Traffic_Lights::Traffic_Lights(char x, char y)
 		direction = EW;
 		break;
 	default:
-		std::cout << "Не понимаю, какое направление?" << std::endl;
+		std::cout << "РќРµ РїРѕРЅРёРјР°СЋ, РєР°РєРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ?" << std::endl;
 		break;
 	}
 }
@@ -330,15 +330,15 @@ Traffic_Lights::~Traffic_Lights()
 {
 }
 
-void Traffic_Lights::change_light() {									//смена цвета светофора
+void Traffic_Lights::change_light() {									//СЃРјРµРЅР° С†РІРµС‚Р° СЃРІРµС‚РѕС„РѕСЂР°
 	time1 = clock.getElapsedTime();
-	if (time1.asSeconds() > 5) {										//каждые 5 секунд менять цвет
-		std::cout << "Прошло 5 секунд, меняем цвет светофора!" << std::endl;
+	if (time1.asSeconds() > 5) {										//РєР°Р¶РґС‹Рµ 5 СЃРµРєСѓРЅРґ РјРµРЅСЏС‚СЊ С†РІРµС‚
+		std::cout << "РџСЂРѕС€Р»Рѕ 5 СЃРµРєСѓРЅРґ, РјРµРЅСЏРµРј С†РІРµС‚ СЃРІРµС‚РѕС„РѕСЂР°!" << std::endl;
 		clock.restart();
 		color = (color == lights_color::GREEN) ? lights_color::RED : lights_color::GREEN;
 		std::cout << (color == lights_color::GREEN ? "GREEN" : "RED") << std::endl;
 	}
-	//std::cout << time1.asSeconds()<<std::endl;						//Дебаги времени в консоли
+	//std::cout << time1.asSeconds()<<std::endl;						//Р”РµР±Р°РіРё РІСЂРµРјРµРЅРё РІ РєРѕРЅСЃРѕР»Рё
 }
 
 void Traffic_Lights::update() {
@@ -359,7 +359,7 @@ bool Traffic_Lights::canGo() {
 }
 
 
-class CrossRoad							//Перекресток, все обновляет
+class CrossRoad							//РџРµСЂРµРєСЂРµСЃС‚РѕРє, РІСЃРµ РѕР±РЅРѕРІР»СЏРµС‚
 {
 private:
 	sf::Texture texture;
@@ -368,12 +368,12 @@ private:
 public:
 	CrossRoad();
 	~CrossRoad();
-	sf::Sprite start() { //отрисовка БГ
+	sf::Sprite start() { //РѕС‚СЂРёСЃРѕРІРєР° Р‘Р“
 		texture.loadFromFile("img/Crossroad(1).png");
 		sprite.setTexture(texture);
 		return sprite;
 	}
-	void update(std::list<Car*>*, std::list<Traffic_Lights*>&) ; //Обновляем все
+	void update(std::list<Car*>*, std::list<Traffic_Lights*>&) ; //РћР±РЅРѕРІР»СЏРµРј РІСЃРµ
 };
 
 CrossRoad::CrossRoad()
@@ -412,12 +412,12 @@ void CrossRoad::update(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffi
 }
 
 
-class Draw :public sf::Drawable {				//отрисовка всего и вся
+class Draw :public sf::Drawable {				//РѕС‚СЂРёСЃРѕРІРєР° РІСЃРµРіРѕ Рё РІСЃСЏ
 public:
 	Draw(std::list<Car*>*, std::list<Traffic_Lights*>&);
 	std::list<Car*>* cars;
 	std::list<Traffic_Lights*> traffic_lights;
-	void draw(sf::RenderTarget& target, sf::RenderStates states)const override;  //перезагрузка отрисовка
+	void draw(sf::RenderTarget& target, sf::RenderStates states)const override;  //РїРµСЂРµР·Р°РіСЂСѓР·РєР° РѕС‚СЂРёСЃРѕРІРєР°
 };
 
 Draw::Draw(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffic_lights) :cars(cars), traffic_lights(traffic_lights) {

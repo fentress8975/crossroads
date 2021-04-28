@@ -16,27 +16,27 @@ sf::Vector2f carSize(16, 8);				//Размер машинки(не пример�
 const sf::Vector2f spawnN0(	centerMap.x - roadSize.x, 
 							centerMap.y - centerMap.y); //это например верхний левый угол Северного спауна
 const sf::Vector2f spawnN1(	centerMap.x + roadSize.x, 
-							centerMap.y - centerMap.y + roadSize.y); //а это нижний правый
+							centerMap.y - centerMap.y + roadSize.y * 2); //а это нижний правый
 //////////////////////////////////// 
 const sf::Vector2f spawnS0(	centerMap.x - roadSize.x, 
-							centerMap.y + centerMap.y - roadSize.y);
+							centerMap.y + centerMap.y - roadSize.y * 2);
 const sf::Vector2f spawnS1(	centerMap.x + roadSize.x, 
 							centerMap.y + centerMap.y);
 //////////////////////////////////// 
-const sf::Vector2f spawnE0(	centerMap.x + centerMap.x - roadSize.x, 
+const sf::Vector2f spawnE0(	centerMap.x + centerMap.x - roadSize.x * 2,
 							centerMap.y - roadSize.y);
 const sf::Vector2f spawnE1(	centerMap.x + centerMap.x, 
 							centerMap.y + roadSize.y);
 //////////////////////////////////// 
 const sf::Vector2f spawnW0(	centerMap.x - centerMap.x, 
 							centerMap.y - roadSize.y);
-const sf::Vector2f spawnW1(	centerMap.x - centerMap.x + roadSize.x, 
+const sf::Vector2f spawnW1(	centerMap.x - centerMap.x + roadSize.x * 2,
 							centerMap.y + roadSize.y);
 //////////////////////////////////// 
 /// координаты спауна машин
-const sf::Vector2f spawn_carN(	centerMap.x - carSize.y, 
+const sf::Vector2f spawn_carN(	centerMap.x - carSize.x, 
 								centerMap.y - centerMap.y);
-const sf::Vector2f spawn_carS(	centerMap.x + carSize.y, 
+const sf::Vector2f spawn_carS(	centerMap.x + carSize.x, 
 								centerMap.y + centerMap.y);
 const sf::Vector2f spawn_carE(	centerMap.x + centerMap.x, 
 								centerMap.y - carSize.x);
@@ -67,7 +67,30 @@ public:
 		return direction;
 	}
 	void setPos(sf::Vector2f);
-	void update(bool);				//обновление координат
+	void update(bool, std::list<Car*>&);				//обновление координат
+	sf::FloatRect getGlobalBoun(){ return sprite.getGlobalBounds(); }
+	sf::FloatRect getBounds() {
+		if (direction == North) {
+			sf::Sprite gap = sprite;
+			gap.move(0, -30);
+			return gap.getGlobalBounds();
+		}
+		if (direction == South) {
+			sf::Sprite gap = sprite;
+			gap.move(0, 30);
+			return gap.getGlobalBounds();
+		}
+		if (direction == East) {
+			sf::Sprite gap = sprite;
+			gap.move(30, 0);
+			return gap.getGlobalBounds();
+		}
+		if (direction == West) {
+			sf::Sprite gap = sprite;
+			gap.move(-30, 0);
+			return gap.getGlobalBounds();
+		}
+	}
 private:
 	sf::Vector2f position;
 	sf::Texture texture;
@@ -134,7 +157,7 @@ std::list<Car*>* Cars::getCars() {
 }
 
 void Cars::spawn_car(direction dir) {
-	if (count < 6) {
+	if (count < 100) {
 		if (isActive(dir)) {
 			Car* car = new Car(dir);
 			if (dir == North) car->setPos(spawn_carS);
@@ -195,6 +218,7 @@ Car::Car(::direction dir)
 	direction = dir;
 	if (direction == North) { sprite.setRotation(90); }
 	if (direction == South) { sprite.setRotation(-90); }
+	if (direction == East) { sprite.setRotation(180); }
 	std::cout << "Sozdal mashiny" << std::endl;
 
 }
@@ -204,23 +228,36 @@ Car::~Car()
 	std::cout << "ybil mashiny" << std::endl;
 }
 
-void Car::update(bool canGo) {
-	if ((position.x <= (centerMap.x + roadSize.x)) && (position.x >= (centerMap.x - roadSize.x)) &&
+void Car::update(bool canGo, std::list<Car*>& cars) {
+	sf::FloatRect car_in_front;
+	for (auto iter = cars.begin(); iter != cars.end(); iter++) { //Проверяем, есть ли спереди машина
+		car_in_front = (*iter)->getGlobalBoun();
+		if (car_in_front.intersects(getBounds())) { stop(); return; }
+	}
+	if ((position.x > (centerMap.x + roadSize.x)) && (position.x < (centerMap.x - roadSize.x)) &&	//если машина уже на перекрестке, пускай едет 
+		(position.y > (centerMap.y + roadSize.y)) && (position.y < (centerMap.y - roadSize.y))) {	//без остановки
+		go();
+		return;
+	}
+
+	if ((position.x <= (centerMap.x + roadSize.x)) && (position.x >= (centerMap.x - roadSize.x)) && //проверяем, что машина не рядом с перекрестком
 		(position.y <= (centerMap.y + roadSize.y)) && (position.y >= (centerMap.y - roadSize.y))) {
 		go();
 	}
-	else {
+	else { 
 		if (direction == North) {
-			if ((position.y <= centerMap.y) || (position.y >= (centerMap.y + (roadSize.y + 20)))) {
+			if ((position.y <= centerMap.y) ||
+				(position.y >= (centerMap.y + (roadSize.y + 20)))) { //проверяем, когда машина уже рядом с перекрестком
 				go();
 			}
-			else if (canGo) {
+			else if (canGo) { //сюда приходит значение светофора
 				go();
 			}
 			else { stop(); }
 		}
 		if (direction == South) {
-			if ((position.y <= (centerMap.y - (roadSize.y + 20))) || (position.y >= centerMap.y)) {
+			if ((position.y <= (centerMap.y - (roadSize.y + 20))) ||
+				(position.y >= centerMap.y)) {
 				go();
 			}
 			else if (canGo) {
@@ -229,7 +266,8 @@ void Car::update(bool canGo) {
 			else { stop(); }
 		}
 		if (direction == East) {
-			if ((position.x <= (centerMap.x - (roadSize.x + 20))) || (position.x >= centerMap.x)) {
+			if ((position.x <= (centerMap.x - (roadSize.x + 20))) || 
+				(position.x >= centerMap.x)) {
 				go();
 			}
 			else if (canGo) {
@@ -238,7 +276,8 @@ void Car::update(bool canGo) {
 			else { stop(); }
 		}
 		if (direction == West) {
-			if ((position.x <= (centerMap.x - roadSize.x)) || (position.x >= (centerMap.x + (roadSize.x + 20)))) {
+			if ((position.x <= centerMap.x) || 
+				(position.x >= (centerMap.x + (roadSize.x + 20)))) {
 				go();
 			}
 			else if (canGo) {
@@ -332,8 +371,8 @@ Traffic_Lights::~Traffic_Lights()
 
 void Traffic_Lights::change_light() {									//смена цвета светофора
 	time1 = clock.getElapsedTime();
-	if (time1.asSeconds() > 5) {										//каждые 5 секунд менять цвет
-		std::cout << "Прошло 5 секунд, меняем цвет светофора!" << std::endl;
+	if (time1.asSeconds() > 10) {										//каждые 5 секунд менять цвет
+		std::cout << "Прошло 10 секунд, меняем цвет светофора!" << std::endl;
 		clock.restart();
 		color = (color == lights_color::GREEN) ? lights_color::RED : lights_color::GREEN;
 		std::cout << (color == lights_color::GREEN ? "GREEN" : "RED") << std::endl;
@@ -402,11 +441,11 @@ void CrossRoad::update(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffi
 	}
 	for (iterC = cars->begin(); iterC != cars->end(); ++iterC) {
 		if ((*iterC)->getDir() == North || (*iterC)->getDir() == South) {
-			(*iterC)->update(light_SN->canGo());
+			(*iterC)->update(light_SN->canGo(),*cars);
 		}
 
 		else if ((*iterC)->getDir() == East || (*iterC)->getDir() == West) {
-			(*iterC)->update(light_EW->canGo());
+			(*iterC)->update(light_EW->canGo(),*cars);
 		}
 	}
 }

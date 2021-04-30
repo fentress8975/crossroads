@@ -67,28 +67,26 @@ public:
 	}
 	void setPos(sf::Vector2f);
 	void update(bool, std::list<Car*>&);				//обновление координат
-	sf::FloatRect getGlobalBoun(){ return sprite.getGlobalBounds(); }
-	sf::FloatRect getBounds() {
+	sf::FloatRect getGlobalBounds(){ return sprite.getGlobalBounds(); }
+	sf::FloatRect getBounds() { //возвращает размер с небольшим расстоянием
+		sf::Sprite gap = sprite; //расстояние между машинками
 		if (direction == North) {
-			sf::Sprite gap = sprite; //расстояние между машинами
 			gap.move(0, -30);
 			return gap.getGlobalBounds();
 		}
 		if (direction == South) {
-			sf::Sprite gap = sprite;
 			gap.move(0, 30);
 			return gap.getGlobalBounds();
 		}
 		if (direction == East) {
-			sf::Sprite gap = sprite;
 			gap.move(30, 0);
 			return gap.getGlobalBounds();
 		}
 		if (direction == West) {
-			sf::Sprite gap = sprite;
 			gap.move(-30, 0);
 			return gap.getGlobalBounds();
 		}
+		else { return getGlobalBounds(); }
 	}
 private:
 	sf::Vector2f position;
@@ -97,10 +95,10 @@ private:
 	direction direction;			//Направление
 	enum direction getDir(char);
 	void destroy();
-	float acceacceleration = 0.3;
-	float breaks = 0.5;
+	float acceacceleration = 0.3f;
+	float breaks =  0.5F;
 	float speed = 0;
-	float max_speed = 3.0;			
+	float max_speed = 3.0F;			
 	void go() { //Двигаем машинку по координатам
 		if (speed < max_speed) {
 			speed += acceacceleration;
@@ -180,13 +178,13 @@ bool Cars::isActive(direction dir) {
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
 		Car* car = *iter;
 		if (dir == South) {
-			if (spawnN_button.contains(car->position)) return false; }
+			if (spawnN_button.contains(car->position) && (car->direction == North)) return false; }
 		else if (dir == North) {
-			if (spawnS_button.contains(car->position)) return false; }
+			if (spawnS_button.contains(car->position) && (car->direction == South)) return false; }
 		else if (dir == West) {
-			if (spawnE_button.contains(car->position)) return false; }
+			if (spawnE_button.contains(car->position) && (car->direction == West)) return false; }
 		else if (dir == East) {
-			if (spawnW_button.contains(car->position)) return false; }
+			if (spawnW_button.contains(car->position) && (car->direction == East)) return false; }
 	}
 	return true;
 }
@@ -211,7 +209,7 @@ Car::~Car()
 void Car::update(bool canGo, std::list<Car*>& cars) {
 	sf::FloatRect car_in_front; //для проверки машин спереди
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) { //Проверяем, есть ли спереди машина
-		car_in_front = (*iter)->getGlobalBoun();
+		car_in_front = (*iter)->getGlobalBounds();
 		if (car_in_front.intersects(getBounds())) { stop(); return; }
 	}
 
@@ -225,19 +223,23 @@ void Car::update(bool canGo, std::list<Car*>& cars) {
 	}
 	else { 
 		if (direction == North) { //проверяем по значению светофора машины
-			if (canGo) { go(); }
+			if (position.y < centerMap.y) { go(); } //если они уже проехали половину перекрестка(спасает от редкого бага, когда они могут встать на крае перекрестка)
+			else if (canGo) { go(); }
 			else { stop(); }
 		}
 		if (direction == South) {
-			if (canGo) { go(); }
+			if (position.y > centerMap.y) { go(); }
+			else if (canGo) { go(); }
 			else { stop(); }
 		}
 		if (direction == East) {
-			if (canGo) { go(); }
+			if (position.x > centerMap.y) { go(); }
+			else if (canGo) { go(); }
 			else { stop(); }
 		}
 		if (direction == West) {
-			if (canGo) { go(); }
+			if (position.x < centerMap.y) { go(); }
+			else if (canGo) { go(); }
 			else { stop(); }
 		}
 	}

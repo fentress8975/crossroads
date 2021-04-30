@@ -1,6 +1,6 @@
 #include "Game.h"
 
-void initWindow(sf::RenderWindow& window) {
+void initWindow(sf::RenderWindow& window) { //Иницилизация окна
 	sf::VideoMode videoMode(window_w, window_h);
 	const std::string title = "Crossroads";
 	sf::ContextSettings settings;
@@ -9,37 +9,31 @@ void initWindow(sf::RenderWindow& window) {
 }
 
 void game() {
-	system("chcp 65001");
-
+	system("chcp 65001");	//Убираем кракозябры в консоле
 	sf::RenderWindow window;
 	window.setFramerateLimit(framerame_limit);
 	initWindow(window);
 
-	std::list<Traffic_Lights*> ::iterator iterL;
-
 	///////////////////////////////
-	CrossRoad crossroad1;
-	Traffic_Lights* lightSN = new Traffic_Lights('G', 'S');
+	CrossRoad crossroad1;									//Создаем перекресток
+	Traffic_Lights* lightSN = new Traffic_Lights('G', 'S'); //Создаем светофоры с нужным цветом (Red Green и направлением N S или E W
 	Traffic_Lights* lightEW = new Traffic_Lights('R', 'E');
-	
-
-	std::list<Traffic_Lights*> lights;
+	std::list<Traffic_Lights*> lights;						//Запихиваем их в список, чтобы передать их
 	lights.push_back(lightSN);
 	lights.push_back(lightEW);
 	
-	Cars cars;
-	std::list<Car*>* car_list = cars.getCars();
+	Cars cars;												//Создаем контроллер машин
+	std::list<Car*>* car_list = cars.getCars();				//Список машин, чтобы передавать их
 	Draw cross(car_list,lights);
 
 	///////////////////////////////
 
-	sf::Vector2i mousePos;
+	sf::Vector2f mousePos;
 
 	while (window.isOpen())
 	{
-		lightSN->change_light();
+		lightSN->change_light();		//Включаем таймер светофорам
 		lightEW->change_light();
-		cars.destroy();
 		crossroad1.update(car_list, lights);
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -48,41 +42,30 @@ void game() {
 				window.close();
 			if (event.type == sf::Event::Closed)
 				window.close();
-
-			mousePos = sf::Mouse::getPosition(window);
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-				//std::cout << "ЛКМ" << std::endl;
-				if ((mousePos.x >= spawnN0.x && mousePos.x <= spawnN1.x) && (mousePos.y >= spawnN0.y && mousePos.y <= spawnN1.y)) { 
+			mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)); //Методы не принимаю в int, поэтому переводим позицию в float
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {	//Проверяем на какой спаун нажали
+				if (spawnN_button.contains(mousePos)) { 
 					std::cout << "Спаун Северный" << std::endl; 
 					cars.spawn_car(South);
 				}
-				else if ((mousePos.x >= spawnS0.x && mousePos.x <= spawnS1.x) && (mousePos.y >= spawnS0.y && mousePos.y <= spawnS1.y)) { 
+				else if (spawnS_button.contains(mousePos)) {
 					std::cout << "Спаун Юг" << std::endl; 
 					cars.spawn_car(North);
 				}
-				else if ((mousePos.x >= spawnE0.x && mousePos.x <= spawnE1.x) && (mousePos.y >= spawnE0.y && mousePos.y <= spawnE1.y)) {
+				else if (spawnE_button.contains(mousePos)) {
 					std::cout << "Спаун Восток" << std::endl; 
 					cars.spawn_car(West);
 				}
-				else if ((mousePos.x >= spawnW0.x && mousePos.x <= spawnW1.x) && (mousePos.y >= spawnW0.y && mousePos.y <= spawnW1.y)) {
+				else if (spawnW_button.contains(mousePos)) {
 					std::cout << "Спаун Запад" << std::endl; 
 					cars.spawn_car(East);
 				}
 				std::cout << "x = " << mousePos.x << " y = " << mousePos.y << std::endl;
 			}
-
 		}
-		
 		window.clear(sf::Color::Black);
 		window.draw(crossroad1.start());
 		window.draw(cross);
 		window.display();
 	}
-
-
-
 }
-
-
-
-

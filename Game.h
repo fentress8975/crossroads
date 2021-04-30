@@ -7,31 +7,30 @@
 const int window_w = 800;					//Ширина и высота окна
 const int window_h = 800;
 const int framerame_limit = 60;				//Лимит фпс
+
 const sf::Vector2f centerMap(400, 400);		//Центр карты
 sf::Vector2f roadSize(30, 30);				//Размер дороги(примерный)
 sf::Vector2f carSize(16, 8);				//Размер машинки(не примерный)
-
+int road_countNS = 2;
+int road_countEW = 2;
+const sf::FloatRect crossroad_outCircle((centerMap.x - (roadSize.x + carSize.x)), (centerMap.y - (roadSize.y + carSize.x)), //размер перекрестка(чуть больше чем он сам) 
+	(roadSize.x* road_countNS + carSize.x * 2), (roadSize.x* road_countEW + carSize.x * 2));			//чтобы машины не на границе, а немного перед ним останавливались
+const sf::FloatRect crossroad((centerMap.x - (roadSize.x*road_countNS/2)), (centerMap.y - (roadSize.y * road_countNS / 2)), //точный размер перекрестка
+	(roadSize.x* road_countNS), (roadSize.x* road_countEW));
+///////////////////////////////////
 // по этим координатом будем определять, где хотят заспаунить машинку,
-// можно сказать это как невидимые квадратные кнопки
-const sf::Vector2f spawnN0(	centerMap.x - roadSize.x, 
-							centerMap.y - centerMap.y); //это например верхний левый угол Северного спауна
-const sf::Vector2f spawnN1(	centerMap.x + roadSize.x, 
-							centerMap.y - centerMap.y + roadSize.y * 2); //а это нижний правый
+// можно сказать это как невидимые кнопки
+const sf::FloatRect spawnN_button(	(centerMap.x - roadSize.x), 0,
+									(roadSize.x * 2), (roadSize.y * 2));
 //////////////////////////////////// 
-const sf::Vector2f spawnS0(	centerMap.x - roadSize.x, 
-							centerMap.y + centerMap.y - roadSize.y * 2);
-const sf::Vector2f spawnS1(	centerMap.x + roadSize.x, 
-							centerMap.y + centerMap.y);
+const sf::FloatRect spawnS_button(	(centerMap.x - roadSize.x), (centerMap.y * 2),
+									(roadSize.x * 2), -(roadSize.y * 2));
 //////////////////////////////////// 
-const sf::Vector2f spawnE0(	centerMap.x + centerMap.x - roadSize.x * 2,
-							centerMap.y - roadSize.y);
-const sf::Vector2f spawnE1(	centerMap.x + centerMap.x, 
-							centerMap.y + roadSize.y);
+const sf::FloatRect spawnE_button(	(centerMap.x * 2 - (roadSize.x * 2)), (centerMap.y - roadSize.y),
+									(roadSize.x * 2), (roadSize.y * 2));
 //////////////////////////////////// 
-const sf::Vector2f spawnW0(	centerMap.x - centerMap.x, 
-							centerMap.y - roadSize.y);
-const sf::Vector2f spawnW1(	centerMap.x - centerMap.x + roadSize.x * 2,
-							centerMap.y + roadSize.y);
+const sf::FloatRect spawnW_button(0, (centerMap.y - roadSize.y),
+										(roadSize.x * 2), (roadSize.y * 2));
 //////////////////////////////////// 
 /// координаты спауна машин
 const sf::Vector2f spawn_carN(	centerMap.x - carSize.x, 
@@ -71,7 +70,7 @@ public:
 	sf::FloatRect getGlobalBoun(){ return sprite.getGlobalBounds(); }
 	sf::FloatRect getBounds() {
 		if (direction == North) {
-			sf::Sprite gap = sprite;
+			sf::Sprite gap = sprite; //расстояние между машинами
 			gap.move(0, -30);
 			return gap.getGlobalBounds();
 		}
@@ -101,28 +100,19 @@ private:
 	float acceacceleration = 0.3;
 	float breaks = 0.5;
 	float speed = 0;
-	float max_speed = 3.0;			//иногда миллиардные мешают циклу
-	void go() {
+	float max_speed = 3.0;			
+	void go() { //Двигаем машинку по координатам
 		if (speed < max_speed) {
 			speed += acceacceleration;
 		}
-		if (direction == North) {
-			position.y -= speed;
-		}
-		if (direction == South) {
-			position.y += speed;
-		}
-		if (direction == East) {
-			position.x += speed;
-		}
-		if (direction == West) {
-			position.x -= speed;
-		}
-
+		if (direction == North) { position.y -= speed; }
+		if (direction == South) { position.y += speed; }
+		if (direction == East) { position.x += speed; }
+		if (direction == West) { position.x -= speed; }
 	}
-	void stop() {
+	void stop() {	//Убавляем машинке скорость
 		if (speed > 0) { speed -= breaks; }
-		if (speed < 0) { speed = 0; }
+		if (speed < 0) { speed = 0; } //Чтобы не поехала назад
 	}
 };
 
@@ -173,10 +163,10 @@ void Cars::spawn_car(direction dir) {
 void Cars::destroy() {
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
 		Car* car = *iter;
-		if (car->position.x > centerMap.x+centerMap.x+carSize.x || 
-			car->position.y > centerMap.y + centerMap.y + carSize.x || 
-			car->position.x < centerMap.x - centerMap.x - carSize.x || 
-			car->position.y < centerMap.y - centerMap.y - carSize.x) { //если машинка за экраном, удаляем объект и указатель
+		if (car->position.x > window_w + carSize.x || 
+			car->position.y > window_h + carSize.x || 
+			car->position.x < 0 - carSize.x || 
+			car->position.y < 0 - carSize.x) { //если машинка за экраном, удаляем объект и указатель
 			car->destroy();
 			cars.erase(iter);
 			--count;
@@ -190,26 +180,17 @@ bool Cars::isActive(direction dir) {
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) {
 		Car* car = *iter;
 		if (dir == South) {
-			if ((car->position.x >= spawnN0.x && car->position.x <= spawnN1.x) && 
-				(car->position.y >= spawnN0.y && car->position.y <= spawnN1.y)) return false;
-		}
+			if (spawnN_button.contains(car->position)) return false; }
 		else if (dir == North) {
-			if ((car->position.x >= spawnS0.x && car->position.x <= spawnS1.x) && 
-				(car->position.y >= spawnS0.y && car->position.y <= spawnS1.y)) return false;
-		}
+			if (spawnS_button.contains(car->position)) return false; }
 		else if (dir == West) {
-			if ((car->position.x >= spawnE0.x && car->position.x <= spawnE1.x) && 
-				(car->position.y >= spawnE0.y && car->position.y <= spawnE1.y)) return false;
-		}
+			if (spawnE_button.contains(car->position)) return false; }
 		else if (dir == East) {
-			if ((car->position.x >= spawnW0.x && car->position.x <= spawnW1.x) && 
-				(car->position.y >= spawnW0.y && car->position.y <= spawnW1.y)) return false;
-		}
+			if (spawnW_button.contains(car->position)) return false; }
 	}
 	return true;
 }
  
-
 
 Car::Car(::direction dir)
 {
@@ -220,7 +201,6 @@ Car::Car(::direction dir)
 	if (direction == South) { sprite.setRotation(-90); }
 	if (direction == East) { sprite.setRotation(180); }
 	std::cout << "Sozdal mashiny" << std::endl;
-
 }
 
 Car::~Car()
@@ -229,60 +209,35 @@ Car::~Car()
 }
 
 void Car::update(bool canGo, std::list<Car*>& cars) {
-	sf::FloatRect car_in_front;
+	sf::FloatRect car_in_front; //для проверки машин спереди
 	for (auto iter = cars.begin(); iter != cars.end(); iter++) { //Проверяем, есть ли спереди машина
 		car_in_front = (*iter)->getGlobalBoun();
 		if (car_in_front.intersects(getBounds())) { stop(); return; }
 	}
-	if ((position.x > (centerMap.x + roadSize.x)) && (position.x < (centerMap.x - roadSize.x)) &&	//если машина уже на перекрестке, пускай едет 
-		(position.y > (centerMap.y + roadSize.y)) && (position.y < (centerMap.y - roadSize.y))) {	//без остановки
+
+	if (crossroad.contains(position)) {	//если уже на перекресте, пусть едет
 		go();
+		sprite.setPosition(position);
 		return;
 	}
-
-	if ((position.x <= (centerMap.x + roadSize.x)) && (position.x >= (centerMap.x - roadSize.x)) && //проверяем, что машина не рядом с перекрестком
-		(position.y <= (centerMap.y + roadSize.y)) && (position.y >= (centerMap.y - roadSize.y))) {
+	if (!(crossroad_outCircle.contains(position))) { //если не рядом с перекрестком
 		go();
 	}
 	else { 
-		if (direction == North) {
-			if ((position.y <= centerMap.y) ||
-				(position.y >= (centerMap.y + (roadSize.y + 20)))) { //проверяем, когда машина уже рядом с перекрестком
-				go();
-			}
-			else if (canGo) { //сюда приходит значение светофора
-				go();
-			}
+		if (direction == North) { //проверяем по значению светофора машины
+			if (canGo) { go(); }
 			else { stop(); }
 		}
 		if (direction == South) {
-			if ((position.y <= (centerMap.y - (roadSize.y + 20))) ||
-				(position.y >= centerMap.y)) {
-				go();
-			}
-			else if (canGo) {
-				go();
-			}
+			if (canGo) { go(); }
 			else { stop(); }
 		}
 		if (direction == East) {
-			if ((position.x <= (centerMap.x - (roadSize.x + 20))) || 
-				(position.x >= centerMap.x)) {
-				go();
-			}
-			else if (canGo) {
-				go();
-			}
+			if (canGo) { go(); }
 			else { stop(); }
 		}
 		if (direction == West) {
-			if ((position.x <= centerMap.x) || 
-				(position.x >= (centerMap.x + (roadSize.x + 20)))) {
-				go();
-			}
-			else if (canGo) {
-				go();
-			}
+			if (canGo) { go(); }
 			else { stop(); }
 		}
 	}
@@ -371,8 +326,8 @@ Traffic_Lights::~Traffic_Lights()
 
 void Traffic_Lights::change_light() {									//смена цвета светофора
 	time1 = clock.getElapsedTime();
-	if (time1.asSeconds() > 10) {										//каждые 5 секунд менять цвет
-		std::cout << "Прошло 10 секунд, меняем цвет светофора!" << std::endl;
+	if (time1.asSeconds() > 5) {										//каждые 5 секунд менять цвет
+		std::cout << "Прошло 5 секунд, меняем цвет светофора!" << std::endl;
 		clock.restart();
 		color = (color == lights_color::GREEN) ? lights_color::RED : lights_color::GREEN;
 		std::cout << (color == lights_color::GREEN ? "GREEN" : "RED") << std::endl;
@@ -403,7 +358,6 @@ class CrossRoad							//Перекресток, все обновляет
 private:
 	sf::Texture texture;
 	sf::Sprite sprite;
-
 public:
 	CrossRoad();
 	~CrossRoad();
@@ -415,14 +369,9 @@ public:
 	void update(std::list<Car*>*, std::list<Traffic_Lights*>&) ; //Обновляем все
 };
 
-CrossRoad::CrossRoad()
-{
+CrossRoad::CrossRoad() {}
 
-}
-
-CrossRoad::~CrossRoad()
-{
-}
+CrossRoad::~CrossRoad() {}
 
 void CrossRoad::update(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffic_lights) {
 	Traffic_Lights* light_SN = nullptr;
@@ -459,9 +408,7 @@ public:
 	void draw(sf::RenderTarget& target, sf::RenderStates states)const override;  //перезагрузка отрисовка
 };
 
-Draw::Draw(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffic_lights) :cars(cars), traffic_lights(traffic_lights) {
-
-}
+Draw::Draw(std::list<Car*>* cars, std::list<Traffic_Lights*>& traffic_lights) :cars(cars), traffic_lights(traffic_lights) {}
 
 void Draw::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 
